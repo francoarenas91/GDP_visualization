@@ -16,8 +16,8 @@ rm(PAQUETES, el)
 
 
 
-flujo<-read_excel("./data.xlsx",sheet="flujo")
-nodes <- read_excel("./data.xlsx",sheet="list")
+flujo<-read_excel("./data_salarios.xlsx",sheet="flujo")
+nodes <- read_excel("./data_salarios.xlsx",sheet="list")
 
 
 source_index<-list()
@@ -43,7 +43,7 @@ links<-flujo %>%
          )%>%
   select(-Source)
 
-# myColors <- 'd3.scaleOrdinal().domain(["M", "W", "sources"]) .range(["#5485AB", "#BA4682", "#646363"])'
+# myColors <- 'd3.scaleOrdinal().domain(["M", "W"]) .range(["#5485AB", "#BA4682"])'
 # Create the Sankey diagram
 sankey <- sankeyNetwork(Links = links, 
                         Nodes = nodes, 
@@ -51,12 +51,13 @@ sankey <- sankeyNetwork(Links = links,
                         Target = "target", 
                         Value = "Value", 
                         NodeID = "name",
-                        units = 'ME', 
-                        fontSize = 10, 
+                        units = 'Milliones de Euros', 
+                        fontSize = 12, 
                         nodeWidth = 20,
-                        # colourScale =myColors,
-                        sinksRight=FALSE,
+                        colourScale ="d3.scaleOrdinal(d3.schemeCategory20)",
+                        sinksRight=F,
                         # iterations = 0 #allows to manual order of nodes as in the nodes df
                         )
 print(sankey)
+
 
