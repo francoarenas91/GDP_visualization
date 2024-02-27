@@ -4,7 +4,7 @@ PAQUETES <- c("dplyr","tidyverse","ggplot2","readxl","network3D")
 
 for (el in PAQUETES){
   if (!require(el, character.only = TRUE)) {
-    install.packages(el, repos = "https://cloud.r-project.org")
+    install.packages(el)
     require(el, character.only = TRUE)
   }
 }
@@ -16,9 +16,12 @@ rm(PAQUETES, el)
 
 
 
-flujo<-read_excel("./data_salarios.xlsx",sheet="flujo")
-nodes <- read_excel("./data_salarios.xlsx",sheet="list")
+flujo<-read_excel("./data_salarios.xlsx",range="A1:C21",sheet="flujo")
+nodes <- read_excel("./data_salarios.xlsx",range="A1:A22",sheet="list")
 
+flujo_2<-read_excel("./1.data/S_1.xlsx",sheet="flujo")
+
+flujo<-rbind(flujo,flujo_2)
 
 source_index<-list()
 ii<-1
