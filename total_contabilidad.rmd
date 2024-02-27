@@ -63,6 +63,9 @@ saldos$type<-"saldo"
 values <-rbind(recursos,empleos,saldos)
 
 
+values %>% mutate(values_2023=values_2022) %>% 
+  mutate(values_2022=values_2023) %>% 
+  select(-values_2023) -> values
 
 ```
 
@@ -112,7 +115,9 @@ saldos_RoW$type<-"saldo"
 # merge the 3 dataframes
 
 values_RoW <-rbind(recursos_RoW,empleos_RoW,saldos_RoW)
-
+values_RoW %>% mutate(values_2023=values_2022) %>% 
+  mutate(values_2022=values_2023) %>% 
+  select(-values_2023) -> values_RoW
 
 ```
 
@@ -128,7 +133,7 @@ flux %>%
 
 ```
 
-
+We need to recalculate those flux that goes partly to rest of the world
 ```{r}
 #get values that interact with RoW
 flux %>% 
@@ -139,6 +144,7 @@ flux %>%
 #get the rows from the RoW df
 values_RoW %>% 
   filter(code %in% RoW_accounts$code) %>% 
+  filter(code != "D.3") %>% #subvenciones on their own
   left_join(RoW_accounts %>% select(code,type,account),by=c("code","type")) %>% 
   mutate(name=case_when(
       type == "Recursos" ~ paste0(name, " recibidas de RM"),
@@ -152,19 +158,47 @@ values_RoW %>%
 #Substract flux to RoW from accounts
 RoW_accounts %>% 
   arrange(code,type) %>% 
+  filter(code != "D.3") %>%
   mutate(values_2022=values_2022-RoW_flux$values_2022) %>% 
   rbind(RoW_flux) ->RoW_accounts
 
 #for subvenciones
+values_RoW %>% 
+    filter(code == "D.3") %>% 
+  left_join(RoW_accounts %>% select(code,type,account),by=c("code","type")) %>% 
+  unique() %>% 
+  mutate(type=case_when(
+    type=="Recursos" ~ "Empleos",
+    type == "Empleos" ~ "Recursos"
+  ),
+   direction=type
+  ) %>%
+  arrange(code,type)->subvenciones_RoW
+
 flux %>% 
   filter(code=="D.3") %>% #sbvenciones 
-  select(-RM)->subvenciones
+  select(-RM) %>% 
+  arrange(code,type) %>% 
+  mutate(values_2022=values_2022-subvenciones_RoW$values_2022,
+         values_RoW=subvenciones_RoW$values_2022) %>% 
+  pivot_longer(c(values_2022,values_RoW),names_to="RoW",values_to = "values_2022") %>% 
+  mutate(name=case_when(
+    type=="Recursos" & RoW=="values_RoW" ~ "subvenciones recibidas del RM",
+    T~name)
+    ) %>% 
+  filter(values_2022>0) %>% 
+  select(-RoW) %>% 
+  mutate(type=case_when(
+    type=="Recursos" & code == "D.3" ~ "Empleos", #swap direction of subvenciones RoW
+    type == "Empleos" & code == "D.3" ~ "Recursos"
+  ))->subvenciones
 
 # paste into flux df
 flux %>% 
-  filter(is.na(RM)) %>% 
+  filter(is.na(RM),
+        code != "D.3") %>% 
   select(-RM) %>% 
-  rbind(RoW_accounts) ->flux
+  rbind(RoW_accounts,subvenciones) ->flux
 ```
 
 tenemos que dar la vuelta segun sean recursos o empleos
