@@ -120,6 +120,17 @@ values_RoW %>% mutate(values_2023=values_2022) %>%
   select(-values_2023) -> values_RoW
 
 ```
+Cargo contabilidad anual para los componentes de demanda
+NO HACE FALTA, SI ESTAN
+```{r}
+
+
+# cont_anual <- read_excel("./1.data/pib95_22.xlsx",sheet="Tabla_1",range="B10:BG33")
+# colnames(cont_anual)[2]<-"name"
+# cont_anual %>% 
+#   select(name,"2022 (A)") %>% 
+#   rename(values_2022_demanda="2022 (A)")-> cont_anual
+```
 
 
 
@@ -127,8 +138,14 @@ load flux
 ```{r}
 flux<-read_excel("./1.data/S_1.xlsx",sheet="flujo")
 flux %>% 
-  left_join(values %>% select(-name),by=c("code","type")) %>% 
-  select(code,name,type,account,direction,values_2022,RM)->flux
+  left_join(values,by=c("code","name","type")) %>% 
+
+  left_join(cont_anual,by=("name")) %>% 
+  # mutate(values_2022=coalesce(values_2022, values_2022_demanda)) %>% #coalesce merges two columns where there are nas
+  select(-values_2022_demanda) %>% 
+  #replace long name in transferencias de capital
+  mutate(name = if_else(str_detect(name, "Transferencias de capital"), "Transferencias de capital", name)) %>% 
+    select(code,name,type,account,direction,values_2022,RM)->flux
 
 
 ```
@@ -145,6 +162,16 @@ flux %>%
 values_RoW %>% 
   filter(code %in% RoW_accounts$code) %>% 
   filter(code != "D.3") %>% #subvenciones on their own
+  mutate(name = case_when(
+            code =="D.9" ~ "Transferencias de capital",
+            T ~ name
+        ),
+        type= case_when(
+            code =="D.9"&type=="Recursos" ~ "Empleos",
+            code =="D.9"&type=="Empleos" ~ "Recursos",
+            T ~ type
+        )
+        ) %>% 
   left_join(RoW_accounts %>% select(code,type,account),by=c("code","type")) %>% 
   mutate(name=case_when(
       type == "Recursos" ~ paste0(name, " recibidas de RM"),
@@ -198,7 +225,8 @@ flux %>%
   filter(is.na(RM),
         code != "D.3") %>% 
   select(-RM) %>% 
-  rbind(RoW_accounts,subvenciones) ->flux
+  rbind(RoW_accounts,subvenciones) %>% 
+  arrange(code,direction)->flux
 ```
 
 tenemos que dar la vuelta segun sean recursos o empleos
