@@ -121,15 +121,14 @@ values_RoW %>% mutate(values_2023=values_2022) %>%
 
 ```
 Cargo contabilidad anual para los componentes de demanda
-NO HACE FALTA, SI ESTAN
 ```{r}
 
-
-# cont_anual <- read_excel("./1.data/pib95_22.xlsx",sheet="Tabla_1",range="B10:BG33")
-# colnames(cont_anual)[2]<-"name"
-# cont_anual %>% 
-#   select(name,"2022 (A)") %>% 
-#   rename(values_2022_demanda="2022 (A)")-> cont_anual
+cont_anual <- read_excel("./1.data/pib95_22.xlsx",sheet="Tabla_1",range="B10:BG33")
+colnames(cont_anual)[2]<-"name"
+cont_anual %>%
+  select(name,"2022 (A)") %>%
+  mutate(code="CA") %>%  #para el join
+  rename(values_2022_demanda="2022 (A)") -> cont_anual
 ```
 
 
@@ -139,10 +138,9 @@ load flux
 flux<-read_excel("./1.data/S_1.xlsx",sheet="flujo")
 flux %>% 
   left_join(values,by=c("code","name","type")) %>% 
-
-  left_join(cont_anual,by=("name")) %>% 
-  # mutate(values_2022=coalesce(values_2022, values_2022_demanda)) %>% #coalesce merges two columns where there are nas
-  select(-values_2022_demanda) %>% 
+  left_join(cont_anual,by=c("name","code")) %>%
+  mutate(values_2022=coalesce(values_2022, values_2022_demanda)) %>% #coalesce merges two columns where there are nas
+  select(-values_2022_demanda) %>%
   #replace long name in transferencias de capital
   mutate(name = if_else(str_detect(name, "Transferencias de capital"), "Transferencias de capital", name)) %>% 
     select(code,name,type,account,direction,values_2022,RM)->flux
@@ -256,13 +254,19 @@ swap the target and value for negative values
   select(-new_source, -new_target) ->flujo
 ```
 
+```{r}
+write_csv(nodes,"1.data/nodes.csv")
+
+nodes<-read_excel("./1.data/nodes_dict.xlsx")
+```
+
 
 ```{r}
 
 source_index<-list()
 ii<-1
 for (element in flujo$Source) {
-  indices <- which(nodes == element)
+  indices <- which(nodes$names == element)
   source_index[[ii]] <- indices-1
   ii<-ii+1
 }
@@ -270,7 +274,7 @@ for (element in flujo$Source) {
 target_index<-list()
 ii<-1
 for (element in flujo$target) {
-  indices <- which(nodes == element)
+  indices <- which(nodes$names == element)
   target_index[[ii]] <- indices-1
   ii<-ii+1
 }
@@ -280,8 +284,8 @@ links<-flujo %>%
   mutate(source=as.numeric(source_index),
          target=as.numeric(target_index)
          )%>%
-  select(-Source)
-
+  select(-Source) %>% 
+  arrange(source)
 
 
 # myColors <- 'd3.scaleOrdinal().domain(["M", "W"]) .range(["#5485AB", "#BA4682"])'
@@ -291,15 +295,22 @@ sankey <- sankeyNetwork(Links = links,
                         Source = "source", 
                         Target = "target", 
                         Value = "values", 
-                        NodeID = "names",
+                        NodeID = "new_names",
                         units = 'Millones de Euros', 
                         fontSize = 12, 
                         nodeWidth = 20,
                         colourScale ="d3.scaleOrdinal(d3.schemeCategory20)",
                         sinksRight=F,
-                        # iterations = 0 #allows to manual order of nodes as in the nodes df
+                        nodePadding = 10
+                         # iterations = 1000 #allows to manual order of nodes as in the nodes df
                         )
+
+
+
 print(sankey)
+
+?sankeyNetwork()
+?sankeyNetworkOutput()
 
 ```
 
