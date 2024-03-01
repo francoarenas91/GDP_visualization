@@ -257,7 +257,7 @@ swap the target and value for negative values
 ```{r}
 write_csv(nodes,"1.data/nodes.csv")
 
-nodes<-read_excel("./1.data/nodes_dict.xlsx")
+nodes<-read_excel("./1.data/nodes_dict.xlsx") %>% data.frame()
 ```
 
 
@@ -298,11 +298,12 @@ sankey <- sankeyNetwork(Links = links,
                         NodeID = "new_names",
                         units = 'Millones de Euros', 
                         fontSize = 12, 
-                        nodeWidth = 20,
-                        colourScale ="d3.scaleOrdinal(d3.schemeCategory20)",
+                        nodeWidth = 15,
+                        colourScale ="d3.scaleOrdinal(d3.schemeCategory20);",
                         sinksRight=F,
-                        nodePadding = 10
-                         # iterations = 1000 #allows to manual order of nodes as in the nodes df
+                        nodePadding = 10,
+                        NodeGroup = as.character(nodes$grupos),
+                        iterations = 1000 #allows to manual order of nodes as in the nodes df
                         )
 
 
