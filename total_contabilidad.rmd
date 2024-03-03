@@ -1,7 +1,7 @@
 ```{r}
 rm(list = ls())
 
-PAQUETES <- c("dplyr","tidyverse","ggplot2","readxl","network3D")
+PAQUETES <- c("dplyr","tidyverse","ggplot2","readxl","network3D","plotly")
 
 for (el in PAQUETES){
   if (!require(el, character.only = TRUE)) {
@@ -143,7 +143,7 @@ flux %>%
   select(-values_2022_demanda) %>%
   #replace long name in transferencias de capital
   mutate(name = if_else(str_detect(name, "Transferencias de capital"), "Transferencias de capital", name)) %>% 
-    select(code,name,type,account,direction,values_2022,RM,color)->flux
+    select(code,name,type,account,direction,values_2022,RM,color,order)->flux
 
 
 ```
@@ -170,7 +170,7 @@ values_RoW %>%
             T ~ type
         )
         ) %>% 
-  left_join(RoW_accounts %>% select(code,type,account,color),by=c("code","type")) %>% 
+  left_join(RoW_accounts %>% select(code,type,account,color,order),by=c("code","type")) %>% 
   mutate(name=case_when(
       type == "Recursos" ~ paste0(name, " recibidas de RM"),
       type == "Empleos" ~ paste0(name, " pagadas a RM"),
@@ -190,7 +190,7 @@ RoW_accounts %>%
 #for subvenciones
 values_RoW %>% 
     filter(code == "D.3") %>% 
-  left_join(RoW_accounts %>% select(code,type,account,color),by=c("code","type")) %>% 
+  left_join(RoW_accounts %>% select(code,type,account,color,order),by=c("code","type")) %>% 
   unique() %>% 
   mutate(type=case_when(
     type=="Recursos" ~ "Empleos",
@@ -224,7 +224,7 @@ flux %>%
         code != "D.3") %>% 
   select(-RM) %>% 
   rbind(RoW_accounts,subvenciones) %>% 
-  arrange(code,direction)->flux
+  arrange(order,code,direction)->flux
 ```
 
 tenemos que dar la vuelta segun sean recursos o empleos
@@ -283,6 +283,7 @@ write_csv(nodes,"1.data/nodes.csv")
 nodes<-read_excel("./1.data/nodes_dict.xlsx") %>% data.frame() %>% 
   replace_na(list(new_names="\ "))
              
+
 ```
 
 
@@ -343,15 +344,72 @@ print(sankey)
 ?sankeyNetwork()
 
 ```
-
+save dfs to csv
 ```{r}
-URL <- paste0('https://cdn.rawgit.com/christophergandrud/networkD3/',
-              'master/JSONdata/energy.json')
-energy <- jsonlite::fromJSON(URL)
+write_csv(nodes,"./1.data/nodes.csv")
+write_csv(links,"./1.data/links.csv")
+```
 
-energy$links$energy_type <- sub(' .*', '',
-                               energy$nodes[energy$links$source + 1, 'name'])
+try with plotly
+```{r}
+
+nodes<-read_excel("./1.data/nodes_dict.xlsx") %>% data.frame() %>% 
+  replace_na(list(new_names="\ "))
+fig <- plot_ly(
+    type = "sankey",
+    orientation = "h",
+
+    node = list(
+      label = nodes$new_names,
+      x=nodes$x_pos/15,
+      y=nodes$y_pos/10,
+      # color = c("blue", "blue", "blue", "blue", "blue", "blue"),
+      pad = 15,
+      thickness = 20,
+      line = list(
+        color = "black",
+        width = 0.5
+      )
+    ),
+
+    link = list(
+      arrowlen=15,
+      source = links$source,
+      target = links$target,
+      value =  links$values
+    ),
+    width=2000,
+    height=1000
+  )
+fig <- fig %>% layout(
+    title = "Basic Sankey Diagram",
+    font = list(
+      size = 10
+    )
+)
+
+fig
+
+?plot_ly
 ```
 
 
+
+```{r}
+library(plotly)
+fig <- plot_ly(
+  type = "sankey",
+  node = list(
+    label = c("A", "B", "C", "D", "E", "F"),
+    x = c(0.2, 1, 0.5, 0.7, 0.3, 0.5),
+    y = c(1, 1, 1, 1, 1, 1),
+    pad = 10), # 10 Pixel
+  link = list(
+    source = c(0, 0, 1, 2, 5, 4, 3, 5),
+    target = c(5, 3, 4, 3, 0, 2, 2, 3),
+    value = c(1, 2, 1, 1, 1, 1, 1, 2)))
+fig <- fig %>% layout(title = "Sankey with manually positioned node")
+
+fig
+```
 
