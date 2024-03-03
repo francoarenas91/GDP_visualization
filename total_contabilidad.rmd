@@ -143,7 +143,7 @@ flux %>%
   select(-values_2022_demanda) %>%
   #replace long name in transferencias de capital
   mutate(name = if_else(str_detect(name, "Transferencias de capital"), "Transferencias de capital", name)) %>% 
-    select(code,name,type,account,direction,values_2022,RM, order)->flux
+    select(code,name,type,account,direction,values_2022,RM,color)->flux
 
 
 ```
@@ -170,7 +170,7 @@ values_RoW %>%
             T ~ type
         )
         ) %>% 
-  left_join(RoW_accounts %>% select(code,type,account,order),by=c("code","type")) %>% 
+  left_join(RoW_accounts %>% select(code,type,account,color),by=c("code","type")) %>% 
   mutate(name=case_when(
       type == "Recursos" ~ paste0(name, " recibidas de RM"),
       type == "Empleos" ~ paste0(name, " pagadas a RM"),
@@ -178,11 +178,11 @@ values_RoW %>%
       ),
     direction=type
   ) %>% 
-  arrange(order,code,name) -> RoW_flux
+  arrange(code,name) -> RoW_flux
 
 #Substract flux to RoW from accounts
 RoW_accounts %>% 
-  arrange(order,code,name) %>% 
+  arrange(code,name) %>% 
   filter(code != "D.3") %>%
   mutate(values_2022=values_2022-RoW_flux$values_2022) %>% 
   rbind(RoW_flux) ->RoW_accounts
@@ -190,7 +190,7 @@ RoW_accounts %>%
 #for subvenciones
 values_RoW %>% 
     filter(code == "D.3") %>% 
-  left_join(RoW_accounts %>% select(code,type,account,order),by=c("code","type")) %>% 
+  left_join(RoW_accounts %>% select(code,type,account,color),by=c("code","type")) %>% 
   unique() %>% 
   mutate(type=case_when(
     type=="Recursos" ~ "Empleos",
@@ -198,7 +198,7 @@ values_RoW %>%
   ),
    direction=type
   ) %>%
-  arrange(order,code,type)->subvenciones_RoW
+  arrange(code,type)->subvenciones_RoW
 
 flux %>% 
   filter(code=="D.3") %>% #sbvenciones 
@@ -238,10 +238,9 @@ flujo <-data.frame(
   Source=c(pull(flujo_recursos,name),pull(flujo_empleos,account)),
   target=c(pull(flujo_recursos,account),pull(flujo_empleos,name)),
   values=c(pull(flujo_recursos,values_2022),pull(flujo_empleos,values_2022)),
-  order=c(pull(flujo_recursos,order),pull(flujo_empleos,order))
-) %>% 
-  # arrange(order) %>% 
-  select(-order)
+  color=c(pull(flujo_recursos,color),pull(flujo_empleos,color))
+)
+
 
 ```
 
@@ -314,7 +313,7 @@ links<-flujo %>%
          )%>%
   select(-Source) 
 
-links$colors<-nodes$new_names[links$source + 1]
+links$color<-flujo$color
 
 # myColors <- 'd3.scaleOrdinal().domain(["M", "W"]) .range(["#5485AB", "#BA4682"])'
 # Create the Sankey diagram
@@ -325,12 +324,13 @@ sankey <- sankeyNetwork(Links = links,
                         Value = "values", 
                         NodeID = "new_names",
                         units = 'Millones de Euros', 
-                        fontSize = 20, 
+                        fontSize = 15, 
                         nodeWidth = 15,
                         colourScale ="d3.scaleOrdinal(d3.schemeCategory20);",
                         sinksRight=F,
                         nodePadding = 10,
-                        # LinkGroup = "colors",
+                        LinkGroup = "color", #agrupar links para colores, sin grupo en gris
+                        NodeGroup = "grupos", #agrupar nodos para colores, sin grupo gris
                         iterations = T, #allows to manual order of nodes as in the nodes df
                          height = 1500, 
                          width = 3000,
@@ -341,7 +341,6 @@ sankey <- sankeyNetwork(Links = links,
 print(sankey)
 
 ?sankeyNetwork()
-?sankeyNetworkOutput()
 
 ```
 
@@ -353,4 +352,6 @@ energy <- jsonlite::fromJSON(URL)
 energy$links$energy_type <- sub(' .*', '',
                                energy$nodes[energy$links$source + 1, 'name'])
 ```
+
+
 

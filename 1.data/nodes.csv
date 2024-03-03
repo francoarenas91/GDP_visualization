@@ -1,65 +1,65 @@
-names,new_names,grupos
-Producto interior bruto,PIB,2
-Variaciones del patrimonio neto debidas al ahorro y a las transferencias de capital,VPNdAyTC,2
-Excedente de explotación bruto / Renta mixta bruta,EBE / RMB,2
-Renta nacional bruta,RNB,2
-Renta disponible nacional bruta,RdispNB,2
-Ahorro bruto,Ahorro bruto,2
-Ahorro neto,Ahorro neto,2
-Capacidad(+)/Necesidad(-) de financiación,Cap./Nec. de financiación,2
-Importaciones de bienes y servicios,Importaciones,2
-Formación bruta de capital fijo,Form. bruta de capital fijo,2
-Variación de existencias,Var. de existencias,2
-Adquisiciones menos cesiones de objetos valiosos,Adq. menos cesiones de objetos valiosos,2
-Exportaciones de bienes y servicios,Exportaciones,2
-Remuneración de los asalariados,Remun. de los asalariados,2
-Impuestos sobre la producción y las importaciones,Impuestos sobre la prod. y las imp.,2
-Subvenciones,Subvenciones,2
-subvenciones recibidas del RM,subvenciones rec. del RM,2
-Rentas de la propiedad,Rentas de la propiedad,2
-Rentas de la propiedad pagadas a RM,Rentas de la propiedad pag. a RM,2
-Rentas de la propiedad recibidas de RM,Rentas de la propiedad rec. de RM,2
-"Impuestos corrientes sobre la renta, el patrimonio, etc.",Impuestos corrientes,2
-"Impuestos corrientes sobre la renta, el patrimonio, etc. pagadas a RM",Impuestos corrientes pag. a RM,2
-"Impuestos corrientes sobre la renta, el patrimonio, etc. recibidas de RM",Impuestos corrientes rec. de RM,2
-Cotizaciones sociales netas,Cotiz. sociales netas,2
-Cotizaciones sociales netas pagadas a RM,Cotiz. sociales netas pag. a RM,2
-Cotizaciones sociales netas recibidas de RM,Cotiz. sociales netas rec. de RM,2
-Prestaciones sociales distintas de las transferencias sociales en especie,Prest. sociales dist. de las transf. sociales en especie,2
-Prestaciones sociales distintas de las transferencias sociales en especie pagadas a RM,Prest. sociales dist. de las transf. sociales en especie pag. a RM,2
-Prestaciones sociales distintas de las transferencias sociales en especie recibidas de RM,Prest. sociales dist. de las transf. sociales en especie rec. de RM,2
-Otras transferencias corrientes,Otras transf. corrientes,2
-Otras transferencias corrientes pagadas a RM,Otras transf. corrientes pag. a RM,2
-Otras transferencias corrientes recibidas de RM,Otras transf. corrientes rec. de RM,2
-Ajuste por la variación de los derechos por pensiones,Ajuste por la var. de los derechos por pensiones,2
-Transferencias de capital,Transferencias de capital,2
-Transferencias de capital pagadas a RM,Transferencias de capital pag. a RM,2
-Transferencias de capital recibidas de RM,Transferencias de capital rec. de RM,2
-Adquisiciones menos cesiones de activos no producidos,Adq. menos cesiones de activos no prod.,2
-Gasto en consumo final / Consumo final efectivo,Gasto en consumo final,2
-Consumo de capital fijo,Consumo de capital fijo,2
-Formación bruta de capital,Form. bruta de capital,2
-Cuenta de bienes y servicios,Cuenta de bienes y servicios,1
-Cuenta de explotación,Cuenta de explotación,1
-Cuenta de variaciones del patrimonio neto debidas al ahorro y a las transferencias de capital,Cuenta de VPNdAyTC,1
-Cuenta de adquisiciones de activos no financieros,Cuenta de adq. de activos no financieros,1
-Cuenta de asignación de la renta primaria,Cuenta de asign. de la renta primaria,1
-Cuenta de distribución secundaria de la renta,Cuenta de distr. secundaria de la renta,1
-Cuenta de utilización de la renta disponible,Cuenta de utilización de la renta disponible,1
-FALSO1, ,0
-FALSO2, ,0
-FALSO3, ,0
-FALSO4, ,0
-FALSO5, ,0
-FALSO6, ,0
-FALSO7, ,0
-FALSO8, ,0
-FALSO9, ,0
-FALSO10, ,0
-FALSO11, ,0
-FALSO12, ,0
-FALSO13, ,0
-FALSO14, ,0
-FALSO15, ,0
-FALSO16, ,0
-FALSO17, ,0
+names
+Producto interior bruto
+Variaciones del patrimonio neto debidas al ahorro y a las transferencias de capital
+Excedente de explotación bruto / Renta mixta bruta
+Renta nacional bruta
+Renta disponible nacional bruta
+Ahorro neto
+Formación bruta de capital fijo
+Variación de existencias
+Adquisiciones menos cesiones de objetos valiosos
+Exportaciones de bienes y servicios
+Remuneración de los asalariados
+Impuestos sobre la producción y las importaciones
+Subvenciones
+subvenciones recibidas del RM
+Rentas de la propiedad
+Rentas de la propiedad recibidas de RM
+"Impuestos corrientes sobre la renta, el patrimonio, etc."
+"Impuestos corrientes sobre la renta, el patrimonio, etc. recibidas de RM"
+Cotizaciones sociales netas
+Cotizaciones sociales netas recibidas de RM
+Prestaciones sociales distintas de las transferencias sociales en especie
+Prestaciones sociales distintas de las transferencias sociales en especie recibidas de RM
+Otras transferencias corrientes
+Otras transferencias corrientes recibidas de RM
+Cuenta de utilización de la renta disponible
+Transferencias de capital
+Transferencias de capital recibidas de RM
+Gasto en consumo final / Consumo final efectivo
+Consumo de capital fijo
+Cuenta de bienes y servicios
+Cuenta de variaciones del patrimonio neto debidas al ahorro y a las transferencias de capital
+Cuenta de explotación
+Cuenta de asignación de la renta primaria
+Cuenta de distribución secundaria de la renta
+Ahorro bruto
+Cuenta de adquisiciones de activos no financieros
+Formación bruta de capital
+Ajuste por la variación de los derechos por pensiones
+Adquisiciones menos cesiones de activos no producidos
+Capacidad(+)/Necesidad(-) de financiación
+Importaciones de bienes y servicios
+Rentas de la propiedad pagadas a RM
+"Impuestos corrientes sobre la renta, el patrimonio, etc. pagadas a RM"
+Cotizaciones sociales netas pagadas a RM
+Prestaciones sociales distintas de las transferencias sociales en especie pagadas a RM
+Otras transferencias corrientes pagadas a RM
+Transferencias de capital pagadas a RM
+FALSO1
+FALSO2
+FALSO3
+FALSO4
+FALSO5
+FALSO6
+FALSO7
+FALSO8
+FALSO9
+FALSO10
+FALSO11
+FALSO12
+FALSO13
+FALSO14
+FALSO15
+FALSO16
+FALSO17
