@@ -224,7 +224,7 @@ flux %>%
         code != "D.3") %>% 
   select(-RM) %>% 
   rbind(RoW_accounts,subvenciones) %>% 
-  arrange(code,name)->flux
+  arrange(code,direction)->flux
 ```
 
 tenemos que dar la vuelta segun sean recursos o empleos
@@ -260,21 +260,22 @@ nodes<-data.frame(
 ```
 
 creo flujos falsos de 0 para modificar el grafico
+NO, BUGEAN EL GRAFICO
 ```{r}
-
-falsos<-data.frame(Source=paste0("FALSO",seq(1,16)),
-                   target=paste0("FALSO",seq(2,17)),
-                   values=c(0)
-)
-#add links to real flux
-add_falsos <-data.frame(Source=c("FALSO11","FALSO7"),
-                        target=c("Exportaciones de bienes y servicios",
-                                 "Adquisiciones menos cesiones de activos no producidos"
-                                ),
-                        values=c(0,0)
-                  )
-
-flujo <-rbind(flujo,falsos,add_falsos)
+# 
+# falsos<-data.frame(Source=paste0("FALSO",seq(1,16)),
+#                    target=paste0("FALSO",seq(2,17)),
+#                    values=c(0)
+# )
+# #add links to real flux
+# add_falsos <-data.frame(Source=c("FALSO11","FALSO7"),
+#                         target=c("Exportaciones de bienes y servicios",
+#                                  "Adquisiciones menos cesiones de activos no producidos"
+#                                 ),
+#                         values=c(0,0)
+#                   )
+# 
+# flujo <-rbind(flujo,falsos,add_falsos)
 ```
 
 ```{r}
