@@ -143,7 +143,7 @@ flux %>%
   select(-values_2022_demanda) %>%
   #replace long name in transferencias de capital
   mutate(name = if_else(str_detect(name, "Transferencias de capital"), "Transferencias de capital", name)) %>% 
-    select(code,name,type,account,direction,values_2022,RM)->flux
+    select(code,name,type,account,direction,values_2022,RM, order)->flux
 
 
 ```
@@ -170,7 +170,7 @@ values_RoW %>%
             T ~ type
         )
         ) %>% 
-  left_join(RoW_accounts %>% select(code,type,account),by=c("code","type")) %>% 
+  left_join(RoW_accounts %>% select(code,type,account,order),by=c("code","type")) %>% 
   mutate(name=case_when(
       type == "Recursos" ~ paste0(name, " recibidas de RM"),
       type == "Empleos" ~ paste0(name, " pagadas a RM"),
@@ -178,11 +178,11 @@ values_RoW %>%
       ),
     direction=type
   ) %>% 
-  arrange(code,type) -> RoW_flux
+  arrange(order,code,name) -> RoW_flux
 
 #Substract flux to RoW from accounts
 RoW_accounts %>% 
-  arrange(code,type) %>% 
+  arrange(order,code,name) %>% 
   filter(code != "D.3") %>%
   mutate(values_2022=values_2022-RoW_flux$values_2022) %>% 
   rbind(RoW_flux) ->RoW_accounts
@@ -190,7 +190,7 @@ RoW_accounts %>%
 #for subvenciones
 values_RoW %>% 
     filter(code == "D.3") %>% 
-  left_join(RoW_accounts %>% select(code,type,account),by=c("code","type")) %>% 
+  left_join(RoW_accounts %>% select(code,type,account,order),by=c("code","type")) %>% 
   unique() %>% 
   mutate(type=case_when(
     type=="Recursos" ~ "Empleos",
@@ -198,7 +198,7 @@ values_RoW %>%
   ),
    direction=type
   ) %>%
-  arrange(code,type)->subvenciones_RoW
+  arrange(order,code,type)->subvenciones_RoW
 
 flux %>% 
   filter(code=="D.3") %>% #sbvenciones 
@@ -224,7 +224,7 @@ flux %>%
         code != "D.3") %>% 
   select(-RM) %>% 
   rbind(RoW_accounts,subvenciones) %>% 
-  arrange(code,direction)->flux
+  arrange(code,name)->flux
 ```
 
 tenemos que dar la vuelta segun sean recursos o empleos
@@ -237,11 +237,12 @@ flux %>%
 flujo <-data.frame(
   Source=c(pull(flujo_recursos,name),pull(flujo_empleos,account)),
   target=c(pull(flujo_recursos,account),pull(flujo_empleos,name)),
-  values=c(pull(flujo_recursos,values_2022),pull(flujo_empleos,values_2022))
-)
-nodes<-data.frame(
-  names=c(pull(flux,name),pull(flux,account)) %>% unique()
-)
+  values=c(pull(flujo_recursos,values_2022),pull(flujo_empleos,values_2022)),
+  order=c(pull(flujo_recursos,order),pull(flujo_empleos,order))
+) %>% 
+  # arrange(order) %>% 
+  select(-order)
+
 ```
 
 swap the target and value for negative values
@@ -252,16 +253,42 @@ swap the target and value for negative values
          target = new_target,
          values =if_else(values<0,-values,values)) %>% # to positive 
   select(-new_source, -new_target) ->flujo
+
+nodes<-data.frame(
+  names=c(pull(flujo,Source),pull(flujo,target),paste0("FALSO",seq(1,17))) %>% unique()
+)
+```
+
+creo flujos falsos de 0 para modificar el grafico
+```{r}
+
+falsos<-data.frame(Source=paste0("FALSO",seq(1,16)),
+                   target=paste0("FALSO",seq(2,17)),
+                   values=c(0)
+)
+#add links to real flux
+add_falsos <-data.frame(Source=c("FALSO11","FALSO7"),
+                        target=c("Exportaciones de bienes y servicios",
+                                 "Adquisiciones menos cesiones de activos no producidos"
+                                ),
+                        values=c(0,0)
+                  )
+
+flujo <-rbind(flujo,falsos,add_falsos)
 ```
 
 ```{r}
 write_csv(nodes,"1.data/nodes.csv")
 
-nodes<-read_excel("./1.data/nodes_dict.xlsx") %>% data.frame()
+nodes<-read_excel("./1.data/nodes_dict.xlsx") %>% data.frame() %>% 
+  replace_na(list(new_names="\ "))
+             
 ```
 
 
 ```{r}
+
+
 
 source_index<-list()
 ii<-1
@@ -284,9 +311,9 @@ links<-flujo %>%
   mutate(source=as.numeric(source_index),
          target=as.numeric(target_index)
          )%>%
-  select(-Source) %>% 
-  arrange(source)
+  select(-Source) 
 
+links$colors<-nodes$new_names[links$source + 1]
 
 # myColors <- 'd3.scaleOrdinal().domain(["M", "W"]) .range(["#5485AB", "#BA4682"])'
 # Create the Sankey diagram
@@ -297,13 +324,15 @@ sankey <- sankeyNetwork(Links = links,
                         Value = "values", 
                         NodeID = "new_names",
                         units = 'Millones de Euros', 
-                        fontSize = 12, 
+                        fontSize = 20, 
                         nodeWidth = 15,
                         colourScale ="d3.scaleOrdinal(d3.schemeCategory20);",
                         sinksRight=F,
                         nodePadding = 10,
-                        NodeGroup = as.character(nodes$grupos),
-                        iterations = 1000 #allows to manual order of nodes as in the nodes df
+                        # LinkGroup = "colors",
+                        iterations = T, #allows to manual order of nodes as in the nodes df
+                         height = 1500, 
+                         width = 3000,
                         )
 
 
@@ -313,5 +342,14 @@ print(sankey)
 ?sankeyNetwork()
 ?sankeyNetworkOutput()
 
+```
+
+```{r}
+URL <- paste0('https://cdn.rawgit.com/christophergandrud/networkD3/',
+              'master/JSONdata/energy.json')
+energy <- jsonlite::fromJSON(URL)
+
+energy$links$energy_type <- sub(' .*', '',
+                               energy$nodes[energy$links$source + 1, 'name'])
 ```
 
