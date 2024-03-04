@@ -1,13 +1,10 @@
 names
-Cuenta de bienes y servicios
 Producto interior bruto
-Cuenta de explotación
 Excedente de explotación bruto / Renta mixta bruta
 Remuneración de los asalariados
 Impuestos sobre la producción y las importaciones
 Rentas de la propiedad
 Rentas de la propiedad recibidas de RM
-Cuenta de asignación de la renta primaria
 Renta nacional bruta
 "Impuestos corrientes sobre la renta, el patrimonio, etc."
 "Impuestos corrientes sobre la renta, el patrimonio, etc. recibidas de RM"
@@ -15,22 +12,15 @@ Cotizaciones sociales netas
 Cotizaciones sociales netas recibidas de RM
 Prestaciones sociales distintas de las transferencias sociales en especie
 Prestaciones sociales distintas de las transferencias sociales en especie recibidas de RM
-Cuenta de distribución secundaria de la renta
 Otras transferencias corrientes
 Otras transferencias corrientes recibidas de RM
 Renta disponible nacional bruta
 Cuenta de utilización de la renta disponible
-Ajuste por la variación de los derechos por pensiones
-Ahorro bruto
 Ahorro neto
 Transferencias de capital
 Transferencias de capital recibidas de RM
-Cuenta de variaciones del patrimonio neto debidas al ahorro y a las transferencias de capital
 Variaciones del patrimonio neto debidas al ahorro y a las transferencias de capital
-Cuenta de adquisiciones de activos no financieros
 Consumo de capital fijo
-Adquisiciones menos cesiones de activos no producidos
-Formación bruta de capital
 Gasto en consumo final / Consumo final efectivo
 Formación bruta de capital fijo
 Variación de existencias
@@ -38,6 +28,16 @@ Adquisiciones menos cesiones de objetos valiosos
 Exportaciones de bienes y servicios
 Subvenciones
 subvenciones recibidas del RM
+Cuenta de bienes y servicios
+Cuenta de explotación
+Cuenta de asignación de la renta primaria
+Cuenta de distribución secundaria de la renta
+Ajuste por la variación de los derechos por pensiones
+Ahorro bruto
+Cuenta de variaciones del patrimonio neto debidas al ahorro y a las transferencias de capital
+Cuenta de adquisiciones de activos no financieros
+Adquisiciones menos cesiones de activos no producidos
+Formación bruta de capital
 Rentas de la propiedad pagadas a RM
 "Impuestos corrientes sobre la renta, el patrimonio, etc. pagadas a RM"
 Cotizaciones sociales netas pagadas a RM

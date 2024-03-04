@@ -1,7 +1,7 @@
 ```{r}
 rm(list = ls())
 
-PAQUETES <- c("dplyr","tidyverse","ggplot2","readxl","network3D","plotly")
+PAQUETES <- c("dplyr","tidyverse","ggplot2","readxl","network3D","plotly","listviewer")
 
 for (el in PAQUETES){
   if (!require(el, character.only = TRUE)) {
@@ -227,34 +227,48 @@ flux %>%
   arrange(order,code,direction)->flux
 ```
 
-tenemos que dar la vuelta segun sean recursos o empleos
+creamos recursos y empleos
 ```{r}
-flux %>% 
+# uso lo viejo porque ordena mejor el grafico
+
+# flux %>%
+#   mutate(
+#     source=case_when(
+#       direction=="Recursos" ~ name,
+#       direction=="Empleos" ~ account
+#     ),
+#     target=case_when(
+#       direction=="Recursos" ~ account,
+#       direction=="Empleos" ~ name
+#     ),
+#   ) %>%
+#   rename("values"="values_2022")-> flujo
+
+flux %>%
   filter(direction=="Recursos") -> flujo_recursos
-flux %>% 
+flux %>%
   filter(direction=="Empleos") -> flujo_empleos
 
 flujo <-data.frame(
-  Source=c(pull(flujo_recursos,name),pull(flujo_empleos,account)),
+  source=c(pull(flujo_recursos,name),pull(flujo_empleos,account)),
   target=c(pull(flujo_recursos,account),pull(flujo_empleos,name)),
   values=c(pull(flujo_recursos,values_2022),pull(flujo_empleos,values_2022)),
   color=c(pull(flujo_recursos,color),pull(flujo_empleos,color))
 )
 
-
 ```
 
 swap the target and value for negative values
 ```{r}
- flujo %>%  mutate(new_source = if_else(values < 0, target, Source),
-         new_target = if_else(values < 0, Source, target),
-         Source = new_source,
+ flujo %>%  mutate(new_source = if_else(values < 0, target, source),
+         new_target = if_else(values < 0, source, target),
+         source = new_source,
          target = new_target,
          values =if_else(values<0,-values,values)) %>% # to positive 
   select(-new_source, -new_target) ->flujo
 
 nodes<-data.frame(
-  names=c(pull(flujo,Source),pull(flujo,target),paste0("FALSO",seq(1,17))) %>% unique()
+  names=c(pull(flujo,source),pull(flujo,target)) %>% unique()
 )
 ```
 
@@ -262,12 +276,12 @@ creo flujos falsos de 0 para modificar el grafico
 NO, BUGEAN EL GRAFICO
 ```{r}
 # 
-# falsos<-data.frame(Source=paste0("FALSO",seq(1,16)),
+# falsos<-data.frame(source=paste0("FALSO",seq(1,16)),
 #                    target=paste0("FALSO",seq(2,17)),
 #                    values=c(0)
 # )
 # #add links to real flux
-# add_falsos <-data.frame(Source=c("FALSO11","FALSO7"),
+# add_falsos <-data.frame(source=c("FALSO11","FALSO7"),
 #                         target=c("Exportaciones de bienes y servicios",
 #                                  "Adquisiciones menos cesiones de activos no producidos"
 #                                 ),
@@ -293,7 +307,7 @@ nodes<-read_excel("./1.data/nodes_dict.xlsx") %>% data.frame() %>%
 
 source_index<-list()
 ii<-1
-for (element in flujo$Source) {
+for (element in flujo$source) {
   indices <- which(nodes$names == element)
   source_index[[ii]] <- indices-1
   ii<-ii+1
@@ -309,39 +323,12 @@ for (element in flujo$target) {
 
 #create links dataframe
 links<-flujo %>%
+  rename("source_names"="source",
+         "target_names"="target") %>% 
   mutate(source=as.numeric(source_index),
          target=as.numeric(target_index)
-         )%>%
-  select(-Source) 
+         )
 
-links$color<-flujo$color
-
-# myColors <- 'd3.scaleOrdinal().domain(["M", "W"]) .range(["#5485AB", "#BA4682"])'
-# Create the Sankey diagram
-sankey <- sankeyNetwork(Links = links, 
-                        Nodes = nodes, 
-                        Source = "source", 
-                        Target = "target", 
-                        Value = "values", 
-                        NodeID = "new_names",
-                        units = 'Millones de Euros', 
-                        fontSize = 15, 
-                        nodeWidth = 15,
-                        colourScale ="d3.scaleOrdinal(d3.schemeCategory20);",
-                        sinksRight=F,
-                        nodePadding = 10,
-                        LinkGroup = "color", #agrupar links para colores, sin grupo en gris
-                        NodeGroup = "grupos", #agrupar nodos para colores, sin grupo gris
-                        iterations = T, #allows to manual order of nodes as in the nodes df
-                         height = 1500, 
-                         width = 3000,
-                        )
-
-
-
-print(sankey)
-
-?sankeyNetwork()
 
 ```
 save dfs to csv
@@ -352,17 +339,19 @@ write_csv(links,"./1.data/links.csv")
 
 try with plotly
 ```{r}
+# links %>% filter(name!="Subvenciones") ->links
 
 nodes<-read_excel("./1.data/nodes_dict.xlsx") %>% data.frame() %>% 
   replace_na(list(new_names="\ "))
 fig <- plot_ly(
     type = "sankey",
     orientation = "h",
+    arrangement="center",
 
     node = list(
       label = nodes$new_names,
-      x=nodes$x_pos/15,
-      y=nodes$y_pos/10,
+       # x=nodes$x_pos/30,
+       # y=nodes$y_pos/10,
       # color = c("blue", "blue", "blue", "blue", "blue", "blue"),
       pad = 15,
       thickness = 20,
@@ -370,6 +359,7 @@ fig <- plot_ly(
         color = "black",
         width = 0.5
       )
+      # hovertemplate=%{nodes$names}
     ),
 
     link = list(
@@ -378,38 +368,23 @@ fig <- plot_ly(
       target = links$target,
       value =  links$values
     ),
-    width=2000,
-    height=1000
+    width=1600,
+    height=1000,
   )
 fig <- fig %>% layout(
-    title = "Basic Sankey Diagram",
+    title = "<b>Cuentas no financieras 2022. Total de la economía. </b> Millones de euros.
+    Elaborado por Francisco Franco Arenas.
+    Fuente: INE",
     font = list(
       size = 10
     )
+
 )
 
 fig
 
-?plot_ly
+
 ```
 
 
-
-```{r}
-library(plotly)
-fig <- plot_ly(
-  type = "sankey",
-  node = list(
-    label = c("A", "B", "C", "D", "E", "F"),
-    x = c(0.2, 1, 0.5, 0.7, 0.3, 0.5),
-    y = c(1, 1, 1, 1, 1, 1),
-    pad = 10), # 10 Pixel
-  link = list(
-    source = c(0, 0, 1, 2, 5, 4, 3, 5),
-    target = c(5, 3, 4, 3, 0, 2, 2, 3),
-    value = c(1, 2, 1, 1, 1, 1, 1, 2)))
-fig <- fig %>% layout(title = "Sankey with manually positioned node")
-
-fig
-```
 
